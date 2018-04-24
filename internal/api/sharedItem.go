@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"net/url"
+
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
@@ -11,12 +13,13 @@ import (
 
 type SharedItem struct {
 	ID            bson.ObjectId `json:"id" bson:"_id"`
+	URL           *url.URL      `json:"url" bson:"url"`
 	ViewCount     int32         `json:"viewCount" bson:"viewCount"`
 	DownloadCount int32         `json:"downloadCount" bson:"downloadCount"`
 	CreationTime  time.Time     `json:"creationTime" bson:"creationTime"`
 	ExpireIn      time.Time     `json:"expireIn" bson:"expireIn"`
 	Stauts        bool          `json:"status" bson:"status"`
-	FileItems     []FileItem    `json:"fileItems" bson:"fileItems"`
+	FileItem      *FileItem     `json:"fileItem" bson:"fileItem"`
 }
 
 // curl -X GET http://localhost:8080/v1/sharedItem

@@ -18,9 +18,10 @@ type APIError struct {
 // FileItem
 type FileItem struct {
 	ID           bson.ObjectId `json:"id" bson:"_id"`
+	Bucket       string        `json:"bucket" bson:"bucket"`
 	Name         string        `json:"name" bson:"name"`
 	Hash         string        `json:"hash" bson:"hash"`
-	FSize        float64       `json:"fsize" bson:"fsize"`
+	FSize        int64         `json:"fsize" bson:"fsize"`
 	MimeType     string        `json:"mimeType" bson:"mimeType"`
 	CreationTime time.Time     `json:"creationTime" bson:"creationTime"`
 	Status       bool          `json:"status" bson:"status"`

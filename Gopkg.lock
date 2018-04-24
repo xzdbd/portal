@@ -49,6 +49,28 @@
   version = "1.0.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/qiniu/api.v7"
+  packages = [
+    "auth/qbox",
+    "conf",
+    "storage"
+  ]
+  revision = "a565afa5b7b7173b4ff814f59d026f5a099b0e14"
+
+[[projects]]
+  name = "github.com/qiniu/x"
+  packages = [
+    "bytes.v7",
+    "bytes.v7/seekable",
+    "ctype.v7",
+    "rpc.v7",
+    "xlog.v7"
+  ]
+  revision = "946c4a16076d6d98aeb78619e2bd4012357f7228"
+  version = "v7.0.8"
+
+[[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
@@ -65,6 +87,12 @@
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
   revision = "e73bf333ef8920dbb52ad18d4bd38ad9d9bc76d7"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/net"
+  packages = ["context"]
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
@@ -99,9 +127,19 @@
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
   version = "v2.2.1"
 
+[[projects]]
+  name = "qiniupkg.com/x"
+  packages = [
+    "bytes.v7",
+    "log.v7",
+    "reqid.v7"
+  ]
+  revision = "946c4a16076d6d98aeb78619e2bd4012357f7228"
+  version = "v7.0.8"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b06718fb1f1aee2458377148a06412915c0b52f5eda2583639e290933d8ad551"
+  inputs-digest = "a8cd16c8784c33a074bffe4c903576a849edaa3d64f05f3fcb7bf6415fd7e03e"
   solver-name = "gps-cdcl"
   solver-version = 1
