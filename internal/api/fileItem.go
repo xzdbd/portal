@@ -105,7 +105,7 @@ func deleteFileItem(c *gin.Context) {
 	id := c.Param("id")
 	if bson.IsObjectIdHex(id) {
 		collection := mgoSession.DB("portal").C("fileItem")
-		err := collection.UpdateId(bson.ObjectIdHex(id), bson.M{"status": false})
+		err := collection.UpdateId(bson.ObjectIdHex(id), bson.M{"$set": bson.M{"status": false}})
 		if err != nil {
 			log.Error(err)
 			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
@@ -117,30 +117,54 @@ func deleteFileItem(c *gin.Context) {
 	}
 }
 
+// SyncFileItems is to sync file item info between qiniu object storage and mongodb
 func SyncFileItems() {
 	qiniuReader := storage.QiniuReader{QiniuAuth: qiniuAuth}
 	items, err := qiniuReader.StatAll(bucket, "")
 	if err != nil {
 		log.Error(err)
-		// return err
 	}
+	// update or insert objects form object storage
 	for _, item := range items {
 		if fileItem, ok := item.(storage.FileItem); ok {
 			collection := mgoSession.DB("portal").C("fileItem")
-			err := collection.Find(bson.M{"bucket": fileItem.Bucket, "name": fileItem.Name}).One(&fileItem)
+			err := collection.Find(bson.M{"bucket": fileItem.Bucket, "name": fileItem.Name, "status": true}).One(&fileItem)
 			if err != nil {
 				fileItem.ID = bson.NewObjectId()
+				log.Info("new object insert:", fileItem.Name)
 			}
-			_, err = collection.Upsert(bson.M{"bucket": fileItem.Bucket, "name": fileItem.Name}, fileItem)
+			_, err = collection.Upsert(bson.M{"bucket": fileItem.Bucket, "name": fileItem.Name, "status": true}, fileItem)
 			if err != nil {
 				log.Error(err)
-				// return err
 			}
 		} else {
 			log.Error("failed to validate file items")
-			// return errors.New("failed to validate file items")
 		}
 	}
+	// ensure all the contents in db is in sync
+	var dbFileItems []FileItem
+	collection := mgoSession.DB("portal").C("fileItem")
+	err = collection.Find(bson.M{"status": true}).All(&dbFileItems)
+	if err != nil {
+		log.Error(err)
+	}
+	for _, dbFileItem := range dbFileItems {
+		found := false
+		for _, item := range items {
+			if fileItem, ok := item.(storage.FileItem); ok {
+				if dbFileItem.Bucket == fileItem.Bucket && dbFileItem.Name == fileItem.Name && dbFileItem.Hash == fileItem.Hash {
+					found = true
+					break
+				}
+			} else {
+				log.Error("failed to validate file items")
+			}
+		}
+		if !found {
+			collection.UpdateId(dbFileItem.ID, bson.M{"$set": bson.M{"status": false}})
+			log.Info("set the file item status to false:", dbFileItem.Name)
+		}
+
+	}
 	log.Info("Sync file items done.")
-	// return nil
 }
