@@ -1,12 +1,8 @@
 package storage
 
-import (
-	"github.com/xzdbd/portal/internal/api"
-)
-
 type Reader interface {
-	Stat(bucket, key string) (fileItem api.FileItem, err error)
-	StatAll(bucket, prefix string) (fileItems []api.FileItem, err error)
+	Stat(bucket, key string) (fileItem interface{}, err error)
+	StatAll(bucket, prefix string) (fileItems []interface{}, err error)
 }
 
 type Uploader interface {

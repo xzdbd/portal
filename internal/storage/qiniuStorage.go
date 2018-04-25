@@ -2,10 +2,11 @@ package storage
 
 import (
 	"context"
+	"time"
 
 	"github.com/qiniu/api.v7/auth/qbox"
 	"github.com/qiniu/api.v7/storage"
-	"github.com/xzdbd/portal/internal/api"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type QiniuAuth struct {
@@ -25,7 +26,19 @@ type QiniuDownloader struct {
 	QiniuAuth
 }
 
-func (q *QiniuReader) Stat(bucket, key string) (fileItem api.FileItem, err error) {
+// FileItem
+type FileItem struct {
+	ID           bson.ObjectId `json:"id" bson:"_id"`
+	Bucket       string        `json:"bucket" bson:"bucket"`
+	Name         string        `json:"name" bson:"name"`
+	Hash         string        `json:"hash" bson:"hash"`
+	FSize        int64         `json:"fsize" bson:"fsize"`
+	MimeType     string        `json:"mimeType" bson:"mimeType"`
+	CreationTime time.Time     `json:"creationTime" bson:"creationTime"`
+	Status       bool          `json:"status" bson:"status"`
+}
+
+func (q *QiniuReader) Stat(bucket, key string) (fileItem interface{}, err error) {
 	mac := qbox.NewMac(q.AccessKey, q.SecretKey)
 	cfg := storage.Config{
 		UseHTTPS: false,
@@ -36,7 +49,7 @@ func (q *QiniuReader) Stat(bucket, key string) (fileItem api.FileItem, err error
 		return
 	}
 
-	fileItem = api.FileItem{
+	fileItem = FileItem{
 		Bucket:       bucket,
 		Name:         key,
 		Hash:         fileInfo.Hash,
@@ -48,7 +61,7 @@ func (q *QiniuReader) Stat(bucket, key string) (fileItem api.FileItem, err error
 	return
 }
 
-func (q *QiniuReader) StatAll(bucket, prefix string) (fileItems []api.FileItem, err error) {
+func (q *QiniuReader) StatAll(bucket, prefix string) (fileItems []interface{}, err error) {
 	mac := qbox.NewMac(q.AccessKey, q.SecretKey)
 	cfg := storage.Config{
 		UseHTTPS: false,
@@ -64,9 +77,8 @@ func (q *QiniuReader) StatAll(bucket, prefix string) (fileItems []api.FileItem, 
 		if err != nil {
 			break
 		}
-		//print entries
 		for _, entry := range entries {
-			fileItem := api.FileItem{
+			fileItem := FileItem{
 				Bucket:       bucket,
 				Name:         entry.Key,
 				Hash:         entry.Hash,
@@ -80,7 +92,6 @@ func (q *QiniuReader) StatAll(bucket, prefix string) (fileItems []api.FileItem, 
 		if hashNext {
 			marker = nextMarker
 		} else {
-			//list end
 			break
 		}
 	}
@@ -105,7 +116,7 @@ func (q *QiniuDownloader) Download(domain, bucket, key string, deadline int64) (
 	return
 }
 
-func (q *QiniuUploader) Upload(file, bucket, key string) (fileItem api.FileItem, err error) {
+func (q *QiniuUploader) Upload(file, bucket, key string) (fileItem interface{}, err error) {
 	putPolicy := storage.PutPolicy{
 		Scope: bucket,
 	}

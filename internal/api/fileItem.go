@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
+	"github.com/xzdbd/portal/internal/storage"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -114,4 +115,32 @@ func deleteFileItem(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: "Invalid ObjectId"})
 	}
+}
+
+func SyncFileItems() {
+	qiniuReader := storage.QiniuReader{QiniuAuth: qiniuAuth}
+	items, err := qiniuReader.StatAll(bucket, "")
+	if err != nil {
+		log.Error(err)
+		// return err
+	}
+	for _, item := range items {
+		if fileItem, ok := item.(storage.FileItem); ok {
+			collection := mgoSession.DB("portal").C("fileItem")
+			err := collection.Find(bson.M{"bucket": fileItem.Bucket, "name": fileItem.Name}).One(&fileItem)
+			if err != nil {
+				fileItem.ID = bson.NewObjectId()
+			}
+			_, err = collection.Upsert(bson.M{"bucket": fileItem.Bucket, "name": fileItem.Name}, fileItem)
+			if err != nil {
+				log.Error(err)
+				// return err
+			}
+		} else {
+			log.Error("failed to validate file items")
+			// return errors.New("failed to validate file items")
+		}
+	}
+	log.Info("Sync file items done.")
+	// return nil
 }

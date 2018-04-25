@@ -36,6 +36,10 @@
   name = "github.com/qiniu/api.v7"
   branch = "master" 
 
+[[constraint]]
+  name = "github.com/robfig/cron"
+  version = ">=1"
+
 [prune]
   go-tests = true
   unused-packages = true
