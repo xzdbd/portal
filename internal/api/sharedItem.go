@@ -19,6 +19,7 @@ var (
 	bucket    = os.Getenv("QINIU_BUCKET")
 )
 
+// SharedItem means a sharing item from a file item
 type SharedItem struct {
 	ID            bson.ObjectId `json:"id" bson:"_id"`
 	URL           string        `json:"url" bson:"url"`
@@ -41,7 +42,7 @@ func getSharedItems(c *gin.Context) {
 	err := collection.Find(bson.M{"status": true}).All(&sharedItems)
 	if err != nil {
 		log.Error(err)
-		c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 	} else {
 		c.JSON(http.StatusOK, sharedItems)
 	}
@@ -56,12 +57,12 @@ func getSharedItem(c *gin.Context) {
 		err := collection.FindId(bson.ObjectIdHex(id)).One(&sharedItem)
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+			c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 		} else {
 			c.JSON(http.StatusOK, sharedItem)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: "Invalid ObjectId"})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: "Invalid ObjectId"})
 	}
 }
 
@@ -74,7 +75,7 @@ func addSharedItem(c *gin.Context) {
 		qiniuDownloader := storage.QiniuDownloader{QiniuAuth: qiniuAuth}
 		downloadURL, err := qiniuDownloader.Download(domain, fileItem.Bucket, fileItem.Name, time.Now().Add(time.Second*3600).Unix())
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+			c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 		}
 		sharedItem = SharedItem{
 			ID:           bson.NewObjectId(),
@@ -88,12 +89,12 @@ func addSharedItem(c *gin.Context) {
 		err = collection.Insert(sharedItem)
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+			c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 		} else {
 			c.JSON(http.StatusCreated, sharedItem)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: err.Error()})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: err.Error()})
 	}
 }
 
@@ -107,15 +108,15 @@ func updateSharedItem(c *gin.Context) {
 			err := collection.UpdateId(bson.ObjectIdHex(id), sharedItem)
 			if err != nil {
 				log.Error(err)
-				c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+				c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 			} else {
 				c.JSON(http.StatusAccepted, sharedItem)
 			}
 		} else {
-			c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: err.Error()})
+			c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: err.Error()})
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: "Invalid ObjectId"})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: "Invalid ObjectId"})
 	}
 }
 
@@ -127,11 +128,11 @@ func deleteSharedItem(c *gin.Context) {
 		err := collection.UpdateId(bson.ObjectIdHex(id), bson.M{"status": false})
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+			c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 		} else {
 			c.JSON(http.StatusAccepted, id)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: "Invalid ObjectId"})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: "Invalid ObjectId"})
 	}
 }

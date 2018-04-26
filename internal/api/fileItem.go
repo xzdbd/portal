@@ -10,13 +10,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// APIError return error
-type APIError struct {
+// Error means an api error type
+type Error struct {
 	Code    string
 	Message string
 }
 
-// FileItem
+// FileItem means a file item in object storage
 type FileItem struct {
 	ID           bson.ObjectId `json:"id" bson:"_id"`
 	Bucket       string        `json:"bucket" bson:"bucket"`
@@ -35,7 +35,7 @@ func getFileItems(c *gin.Context) {
 	err := collection.Find(bson.M{"status": true}).All(&fileItems)
 	if err != nil {
 		log.Error(err)
-		c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 	} else {
 		c.JSON(http.StatusOK, fileItems)
 	}
@@ -50,12 +50,12 @@ func getFileItem(c *gin.Context) {
 		err := collection.FindId(bson.ObjectIdHex(id)).One(&fileItem)
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+			c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 		} else {
 			c.JSON(http.StatusOK, fileItem)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: "Invalid ObjectId"})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: "Invalid ObjectId"})
 	}
 }
 
@@ -69,12 +69,12 @@ func addFileItem(c *gin.Context) {
 		err := collection.Insert(fileItem)
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+			c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 		} else {
 			c.JSON(http.StatusCreated, fileItem)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: err.Error()})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: err.Error()})
 	}
 }
 
@@ -88,15 +88,15 @@ func updateFileItem(c *gin.Context) {
 			err := collection.UpdateId(bson.ObjectIdHex(id), fileItem)
 			if err != nil {
 				log.Error(err)
-				c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+				c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 			} else {
 				c.JSON(http.StatusAccepted, fileItem)
 			}
 		} else {
-			c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: err.Error()})
+			c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: err.Error()})
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: "Invalid ObjectId"})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: "Invalid ObjectId"})
 	}
 }
 
@@ -108,12 +108,12 @@ func deleteFileItem(c *gin.Context) {
 		err := collection.UpdateId(bson.ObjectIdHex(id), bson.M{"$set": bson.M{"status": false}})
 		if err != nil {
 			log.Error(err)
-			c.JSON(http.StatusInternalServerError, APIError{Code: "E501", Message: err.Error()})
+			c.JSON(http.StatusInternalServerError, Error{Code: "E501", Message: err.Error()})
 		} else {
 			c.JSON(http.StatusAccepted, id)
 		}
 	} else {
-		c.JSON(http.StatusBadRequest, APIError{Code: "E400", Message: "Invalid ObjectId"})
+		c.JSON(http.StatusBadRequest, Error{Code: "E400", Message: "Invalid ObjectId"})
 	}
 }
 
