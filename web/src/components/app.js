@@ -18,7 +18,7 @@ const styles = theme => ({
   }
 })
 
-function FullWidthGrid (props) {
+function App (props) {
   const { classes } = props
 
   return (
@@ -41,8 +41,8 @@ function FullWidthGrid (props) {
   )
 }
 
-FullWidthGrid.propTypes = {
+App.propTypes = {
   classes: PropTypes.object.isRequired
 }
 
-export default withStyles(styles)(FullWidthGrid)
+export default withStyles(styles)(App)

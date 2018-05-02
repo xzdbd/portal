@@ -4,6 +4,7 @@ import { withStyles } from 'material-ui/styles'
 import Typography from 'material-ui/Typography'
 import Grid from 'material-ui/Grid'
 import SearchBar from 'material-ui-search-bar'
+import Button from 'material-ui/Button'
 
 const styles = {
   root: {
@@ -41,9 +42,9 @@ function HeaderBar (props) {
             }}
           />
         </Grid>
-        {/* <Grid item xs={8}>
-                <img src="https://slidesup.com/static/media/hero.4744b570.svg" width="100%" height="200px"/>
-            </Grid> */}
+        <Button variant='raised' color='primary' className={classes.button}>
+        GO
+        </Button>
       </Grid>
     </div>
   )

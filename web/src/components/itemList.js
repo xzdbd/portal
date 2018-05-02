@@ -8,7 +8,7 @@ const styles = {
   root: {
     flexGrow: 1,
     paddingTop: 40,
-    minHeight: 500
+    minHeight: 400
   },
   dividerGrid: {
     paddingTop: 0,
